@@ -1,0 +1,11 @@
+name = "SQL Learning Theme"
+license = "MIT"
+description = "A modern theme for SQL learning sites with RDBMS badge support and educational features"
+homepage = "https://sql-basics.vercel.app"
+version = "0.1.0"
+tags = ["education", "sql", "database", "learning", "responsive", "modern"]
+features = ["RDBMS badges", "Code highlighting", "Mermaid diagrams", "Responsive design"]
+min_version = "0.110.0"
+
+[author]
+  name = "Project SQL Master Hub"

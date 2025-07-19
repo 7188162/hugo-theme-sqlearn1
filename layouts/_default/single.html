@@ -1,0 +1,110 @@
+{{- define "main" -}}
+<article class="article">
+    <!-- Page Header -->
+    <header class="article-header">
+        <h1>{{ .Title }}</h1>
+        
+        <!-- RDBMS Support Badges -->
+        {{- if .Params.rdbms -}}
+        <div class="rdbms-badges">
+            {{- range .Params.rdbms -}}
+                {{- $name := . | lower -}}
+                {{- $displayName := . -}}
+                {{- $class := printf "badge-%s" $name -}}
+
+                {{- if eq $name "std" }}{{ $displayName = "標準SQL" }}{{ end -}}
+                {{- if eq $name "postgres" }}{{ $displayName = "PostgreSQL" }}{{ end -}}
+                {{- if eq $name "db2" }}{{ $displayName = "IBM Db2" }}{{ end -}}
+                {{- if eq $name "access" }}{{ $displayName = "MS Access" }}{{ end -}}
+
+                <div class="badge {{ $class }}">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    <span>{{ $displayName }}</span>
+                </div>
+            {{- end -}}
+        </div>
+        {{- end -}}
+
+        <!-- Article Meta -->
+        <div class="article-meta">
+            {{- if .Params.description -}}
+            <p class="article-description">{{ .Params.description }}</p>
+            {{- end -}}
+            
+            {{- if .Date -}}
+            <p class="article-date">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25m-10.5 16.5h10.5a2.25 2.25 0 002.25-2.25V7.5a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 7.5v10.5a2.25 2.25 0 002.25 2.25z" />
+                </svg>
+                <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006年1月2日" }}</time>
+            </p>
+            {{- end -}}
+
+            {{- if .Params.readingTime -}}
+            <p class="reading-time">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                読了時間: 約{{ .Params.readingTime }}分
+            </p>
+            {{- end -}}
+        </div>
+    </header>
+
+    <!-- Table of Contents -->
+    {{- if and .Params.toc .TableOfContents -}}
+    <div class="table-of-contents">
+        <h3>📋 目次</h3>
+        {{ .TableOfContents }}
+    </div>
+    {{- end -}}
+
+    <!-- Article Content -->
+    <div class="article-content">
+        {{ .Content }}
+    </div>
+
+    <!-- Article Footer -->
+    <footer class="article-footer">
+        <!-- Tags -->
+        {{- if .Params.tags -}}
+        <div class="article-tags">
+            <h4>🏷️ タグ</h4>
+            <div class="tags-list">
+                {{- range .Params.tags -}}
+                <a href="{{ (printf "/tags/%s" . | urlize) | relURL }}" class="tag">{{ . }}</a>
+                {{- end -}}
+            </div>
+        </div>
+        {{- end -}}
+
+        <!-- Navigation -->
+        <nav class="article-nav">
+            {{- with .NextInSection -}}
+            <a href="{{ .Permalink }}" class="nav-link prev-link">
+                <div class="nav-direction">                                        
+                    <div>{{ site.Data.messages.article.prev_chapter | default "前のチャプター" }}</div>
+                </div>
+                <div class="nav-title">{{ .Title }}</div>
+            </a>
+            {{- end -}}
+            
+            {{- with .PrevInSection -}}
+            <a href="{{ .Permalink }}" class="nav-link next-link">
+                <div class="nav-direction">                                        
+                    <div>{{ site.Data.messages.article.next_chapter | default "次のチャプター" }}</div>
+                </div>
+                <div class="nav-title">{{ .Title }}</div>
+            </a>
+            {{- end -}}
+        </nav>
+
+        <!-- Last Modified -->
+        {{- if .Lastmod -}}
+        <div class="last-modified">
+            <p>最終更新: <time datetime="{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}">{{ .Lastmod.Format "2006年1月2日" }}</time></p>
+        </div>
+        {{- end -}}
+    </footer>
+</article>
+{{- end -}}

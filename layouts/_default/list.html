@@ -1,0 +1,118 @@
+{{- define "main" -}}
+<div class="list-page">
+    <!-- Page Header -->
+    <header class="page-header">
+        <h1>{{ .Title }}</h1>
+        {{- if .Params.description -}}
+        <p class="page-description">{{ .Params.description }}</p>
+        {{- end -}}
+    </header>
+
+    <!-- Content if exists -->
+    {{- if .Content -}}
+    <div class="page-content">
+        {{ .Content }}
+    </div>
+    {{- end -}}
+
+    <!-- Pages List -->
+    {{- if .Pages -}}
+    <div class="pages-grid">
+        {{- range .Pages.ByWeight -}}
+        <article class="page-card">
+            <!-- Card Header -->
+            <header class="card-header">
+                <h2><a href="{{ .Permalink }}">{{ .Title }}</a></h2>
+                
+                <!-- RDBMS Badges -->
+                {{- if .Params.rdbms -}}
+                <div class="card-badges">
+                    {{- range first 3 .Params.rdbms -}}
+                        {{- $name := . | lower -}}
+                        {{- $displayName := . -}}
+                        {{- $class := printf "badge-%s" $name -}}
+
+                        {{- if eq $name "std" }}{{ $displayName = "標準SQL" }}{{ end -}}
+                        {{- if eq $name "postgres" }}{{ $displayName = "PostgreSQL" }}{{ end -}}
+                        {{- if eq $name "db2" }}{{ $displayName = "IBM Db2" }}{{ end -}}
+                        {{- if eq $name "access" }}{{ $displayName = "MS Access" }}{{ end -}}
+
+                        <div class="badge small {{ $class }}">{{ $displayName }}</div>
+                    {{- end -}}
+                    {{- if gt (len .Params.rdbms) 3 -}}
+                    <div class="badge small more">+{{ sub (len .Params.rdbms) 3 }}</div>
+                    {{- end -}}
+                </div>
+                {{- end -}}
+            </header>
+
+            <!-- Card Content -->
+            <div class="card-content">
+                {{- if .Params.description -}}
+                <p class="card-description">{{ .Params.description }}</p>
+                {{- else if .Summary -}}
+                <p class="card-description">{{ .Summary }}</p>
+                {{- end -}}
+
+                <!-- Card Meta -->
+                <div class="card-meta">
+                    {{- if .Params.difficulty -}}
+                    <span class="difficulty difficulty-{{ .Params.difficulty }}">
+                        {{- if eq .Params.difficulty "beginner" -}}初級
+                        {{- else if eq .Params.difficulty "intermediate" -}}中級
+                        {{- else if eq .Params.difficulty "advanced" -}}上級
+                        {{- else -}}{{ .Params.difficulty }}
+                        {{- end -}}
+                    </span>
+                    {{- end -}}
+
+                    {{- if .Params.readingTime -}}
+                    <span class="reading-time">📖 約{{ .Params.readingTime }}分</span>
+                    {{- end -}}
+
+                    {{- if and .Date (not .Date.IsZero) -}}
+                    <span class="date">📅 {{ .Date.Format "2006/01/02" }}</span>
+                    {{- end -}}
+                </div>
+
+                <!-- Topics List -->
+                {{- if .Params.topics -}}
+                <div class="topics-list">
+                    <h4>学習内容:</h4>
+                    <ul>
+                        {{- range first 4 .Params.topics -}}
+                        <li>{{ . }}</li>
+                        {{- end -}}
+                        {{- if gt (len .Params.topics) 4 -}}
+                        <li>他{{ sub (len .Params.topics) 4 }}項目...</li>
+                        {{- end -}}
+                    </ul>
+                </div>
+                {{- end -}}
+            </div>
+
+            <!-- Card Footer -->
+            <footer class="card-footer">
+                <a href="{{ .Permalink }}" class="read-more-btn">
+                    詳しく見る
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                </a>
+            </footer>
+        </article>
+        {{- end -}}
+    </div>
+    {{- else -}}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-icon">📚</div>
+        <h3>コンテンツが見つかりません</h3>
+        <p>このセクションにはまだコンテンツがありません。</p>
+    </div>
+    {{- end -}}
+
+    <!-- Pagination -->
+    {{- template "_internal/pagination.html" . -}}
+</div>
+{{- end -}}

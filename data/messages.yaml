@@ -1,0 +1,58 @@
+# サイト全体で使用するメッセージとラベル
+
+# ナビゲーション
+navigation:
+  home: "ホーム"
+  chapters: "章一覧"
+  exercises: "演習"
+  references: "リファレンス"
+  menu_toggle: "メニューを開く"
+
+# 章一覧
+chapters:
+  title: "📚 章一覧"
+  empty_message: "このセクションにはまだコンテンツがありません。"
+  view_all: "すべての章を見る"
+  read_more: "詳しく見る"
+  
+# 進捗関連
+progress:
+  title: "📈 学習進捗"
+  completed_suffix: "完了"
+
+# 記事関連
+article:
+  toc_title: "📋 目次"
+  tags_title: "🏷️ タグ"
+  prev_chapter: "← 前のセクション"
+  next_chapter: "次のセクション →"
+  last_modified: "最終更新"
+  reading_time: "読了時間: 約{time}分"
+
+# 難易度レベル
+difficulty:
+  beginner: "初級"
+  intermediate: "中級"
+  advanced: "上級"
+
+# その他
+misc:
+  more_items: "+{count}"
+  copy_code: "コピー"
+  code_copied: "コピー済み"
+  search_placeholder: "検索..."
+  search_no_results: "検索結果が見つかりませんでした。"
+
+# フッター
+footer:
+  navigation_title: "ナビゲーション"
+  recent_chapters_title: "最近の章"
+  license_title: "ライセンス"
+  copyright: "All rights reserved."
+  built_with: "Built with"
+
+# エラーメッセージ
+errors:
+  404_title: "ページが見つかりません"
+  404_message: "お探しのページは存在しないか、移動した可能性があります。"
+  404_back_home: "ホームに戻る"

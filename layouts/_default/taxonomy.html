@@ -1,0 +1,234 @@
+{{- define "main" -}}
+<div class="taxonomy-page">
+    <!-- Page Header -->
+    <header class="page-header">
+        <h1>
+            {{- if eq .Type "tags" -}}
+                🏷️ タグ: {{ .Title }}
+            {{- else if eq .Type "categories" -}}
+                📁 カテゴリ: {{ .Title }}
+            {{- else -}}
+                {{ .Title }}
+            {{- end -}}
+        </h1>
+        
+        {{- if .Params.description -}}
+        <p class="page-description">{{ .Params.description }}</p>
+        {{- else if eq .Title "exercise" -}}
+        <p class="page-description">各章の演習問題をまとめて確認できます。実際に手を動かして学習内容を定着させましょう。</p>
+        {{- end -}}
+        
+        <!-- Stats -->
+        <div class="taxonomy-stats">
+            <span class="stat-item">📄 {{ len .Pages }}件の記事</span>
+            {{- if .Pages -}}
+            {{- $chaptersCount := len (where .Pages "Section" "!=" "appendix") -}}
+            <span class="stat-item">📚 {{ $chaptersCount }}章分</span>
+            {{- end -}}
+        </div>
+    </header>
+
+    <!-- Content if exists -->
+    {{- if .Content -}}
+    <div class="page-content">
+        {{ .Content }}
+    </div>
+    {{- end -}}
+
+    <!-- Grouped Pages by Chapter -->
+    {{- if .Pages -}}
+    <div class="taxonomy-content">
+        {{- /* 章ごとにグループ化 */ -}}
+        {{- $groupedPages := .Pages.GroupBy "Section" -}}
+        {{- range $groupedPages -}}
+        {{- $sectionName := .Key -}}
+        {{- $sectionPages := .Pages -}}
+        
+        <section class="chapter-group">
+            <h2>
+                {{- if hasPrefix $sectionName "chapter" -}}
+                    {{- $chapterPage := site.GetPage "section" $sectionName -}}
+                    {{- if $chapterPage -}}
+                        📖 {{ $chapterPage.Title }}
+                    {{- else -}}
+                        📖 {{ $sectionName | title }}
+                    {{- end -}}
+                {{- else if eq $sectionName "appendix" -}}
+                    📎 付録
+                {{- else -}}
+                    📄 {{ $sectionName | title }}
+                {{- end -}}
+            </h2>
+            
+            <div class="exercises-grid">
+                {{- range $sectionPages.ByWeight -}}
+                <article class="exercise-card">
+                    <!-- Card Header -->
+                    <header class="card-header">
+                        <h3><a href="{{ .Permalink }}">{{ .Title }}</a></h3>
+                        
+                        <!-- RDBMS Badges -->
+                        {{- if .Params.rdbms -}}
+                        <div class="card-badges">
+                            {{- range first 3 .Params.rdbms -}}
+                                {{- $name := . | lower -}}
+                                {{- $displayName := . -}}
+                                {{- $class := printf "badge-%s" $name -}}
+
+                                {{- if eq $name "std" }}{{ $displayName = "標準SQL" }}{{ end -}}
+                                {{- if eq $name "postgres" }}{{ $displayName = "PostgreSQL" }}{{ end -}}
+                                {{- if eq $name "db2" }}{{ $displayName = "IBM Db2" }}{{ end -}}
+                                {{- if eq $name "access" }}{{ $displayName = "MS Access" }}{{ end -}}
+
+                                <div class="badge small {{ $class }}">{{ $displayName }}</div>
+                            {{- end -}}
+                            {{- if gt (len .Params.rdbms) 3 -}}
+                            <div class="badge small more">+{{ sub (len .Params.rdbms) 3 }}</div>
+                            {{- end -}}
+                        </div>
+                        {{- end -}}
+                    </header>
+
+                    <!-- Card Content -->
+                    <div class="card-content">
+                        {{- if .Params.description -}}
+                        <p class="card-description">{{ .Params.description }}</p>
+                        {{- else if .Summary -}}
+                        <p class="card-description">{{ .Summary }}</p>
+                        {{- end -}}
+
+                        <!-- Card Meta -->
+                        <div class="card-meta">
+                            {{- if .Params.difficulty -}}
+                            <span class="difficulty difficulty-{{ .Params.difficulty }}">
+                                {{- if eq .Params.difficulty "beginner" -}}初級
+                                {{- else if eq .Params.difficulty "intermediate" -}}中級
+                                {{- else if eq .Params.difficulty "advanced" -}}上級
+                                {{- else -}}{{ .Params.difficulty }}
+                                {{- end -}}
+                            </span>
+                            {{- end -}}
+
+                            {{- if .Params.exercise_count -}}
+                            <span class="exercise-count">🧩 {{ .Params.exercise_count }}問</span>
+                            {{- end -}}
+
+                            {{- if .Params.estimated_time -}}
+                            <span class="estimated-time">⏱️ 約{{ .Params.estimated_time }}分</span>
+                            {{- end -}}
+
+                            {{- if .Date -}}
+                            <span class="date">📅 {{ .Date.Format "2006/01/02" }}</span>
+                            {{- end -}}
+                        </div>
+                    </div>
+
+                    <!-- Card Footer -->
+                    <footer class="card-footer">
+                        <a href="{{ .Permalink }}" class="read-more-btn">
+                            演習を始める
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                            </svg>
+                        </a>
+                    </footer>
+                </article>
+                {{- end -}}
+            </div>
+        </section>
+        {{- end -}}
+    </div>
+    {{- else -}}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-icon">🧩</div>
+        <h3>演習問題が見つかりません</h3>
+        <p>このタグに関連する演習問題はまだありません。</p>
+    </div>
+    {{- end -}}
+
+    <!-- Pagination -->
+    {{- template "_internal/pagination.html" . -}}
+</div>
+
+<style>
+/* Taxonomy Page Specific Styles */
+.taxonomy-page {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.taxonomy-stats {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    background: var(--neutral-100);
+    color: var(--neutral-700);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.chapter-group {
+    margin-bottom: 3rem;
+}
+
+.chapter-group h2 {
+    color: var(--primary-blue);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--neutral-200);
+}
+
+.exercises-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.exercise-card {
+    background: white;
+    border: 1px solid var(--neutral-200);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.exercise-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: var(--primary-blue);
+}
+
+.exercise-count,
+.estimated-time {
+    color: var(--accent-purple);
+    font-weight: 500;
+}
+
+.read-more-btn {
+    background: var(--accent-purple);
+}
+
+.read-more-btn:hover {
+    background: var(--primary-blue);
+}
+
+@media (max-width: 768px) {
+    .exercises-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .taxonomy-stats {
+        justify-content: center;
+    }
+}
+</style>
+{{- end -}}

@@ -1,0 +1,10 @@
+{{/*
+  情報ボックスを表示するショートコード（堅牢版）
+  使い方: {{< infobox title="タイトル" >}}コンテンツ{{< /infobox >}}
+*/}}
+<div class="info-box">
+    <h4>{{ .Get "title" | default "ポイント" }}</h4>
+    <div class="info-box-content">
+        {{ .Inner | markdownify }}
+    </div>
+</div>

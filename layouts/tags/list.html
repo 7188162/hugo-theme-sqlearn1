@@ -1,0 +1,590 @@
+{{- define "main" -}}
+{{- $isTaxonomyTermPage := eq .Kind "term" -}}
+{{- $isTaxonomyListOrTermPage := or (eq .Kind "taxonomy") (eq .Kind "term") -}}
+{{- $isExerciseTagTerm := and $isTaxonomyTermPage (eq .Title "exercise") -}}
+
+<div class="list-page{{ if $isTaxonomyListOrTermPage }} taxonomy-page{{ end }}">
+    <!-- Page Header -->
+    <header class="page-header">
+        {{- if $isExerciseTagTerm -}}
+        <h1>{{ .Title }}</h1>
+        <p class="page-description">各章の演習問題をまとめて確認できます。実際に手を動かして学習内容を定着させましょう。</p>
+        <div class="taxonomy-stats">
+            <span class="stat-item">📄 {{ len .Pages }}件の記事</span>
+            {{- if .Pages -}}
+            {{- $chaptersCount := len (where .Pages "Section" "!=" "appendix") -}}
+            <span class="stat-item">📚 {{ $chaptersCount }}章分</span>
+            {{- end -}}
+        </div>
+        {{- else if $isTaxonomyListOrTermPage -}}
+        <h1>{{ .Title }}</h1>
+        {{- if .Params.description -}}
+        <p class="page-description">{{ .Params.description }}</p>
+        {{- end -}}
+        <div class="taxonomy-stats">
+            <span class="stat-item">📄 {{ len .Pages }}件の記事</span>
+            {{- if .Pages -}}
+            {{- $sectionsCount := len ($.Pages.GroupBy "Section") -}}
+            <span class="stat-item">📂 {{ $sectionsCount }}セクション</span>
+            {{- end -}}
+        </div>
+        {{- else -}}
+        <h1>{{ .Title }}</h1>
+        {{- if .Params.description -}}
+        <p class="page-description">{{ .Params.description }}</p>
+        {{- end -}}
+        {{- end -}}
+    </header>
+
+    <!-- Content if exists -->
+    {{- if .Content -}}
+    <div class="page-content">
+        {{ .Content }}
+    </div>
+    {{- end -}}
+
+    <!-- Conditional Page Listing -->
+    {{- if .Pages -}}
+        {{- if $isTaxonomyListOrTermPage -}}
+            <!-- タグページ（全体リストまたはターム）の場合（章ごとにグループ化） -->
+            <div class="taxonomy-content">
+                {{- $groupedPages := .Pages.GroupBy "Section" -}}
+                {{- $chapterOrder := site.Data.chapters.order -}}
+                {{- $orderedGroups := slice -}} {{/* Ordered list of groups */}}
+                {{- $processedKeys := dict -}} 
+
+                {{- range $chapterOrder -}}
+                    {{- $sectionKey := . -}}
+                    {{- $foundGroup := "" -}}
+                    {{- range $groupedPages -}}
+                        {{- if eq .Key $sectionKey -}}
+                            {{- $foundGroup = . -}}
+                            {{- break -}}
+                        {{- end -}}
+                    {{- end -}}
+                    {{- if $foundGroup -}}
+                        {{- $orderedGroups = $orderedGroups | append $foundGroup -}}
+                        {{- $processedKeys = merge $processedKeys (dict $sectionKey true) -}} {{/* Mark as processed */}}
+                    {{- end -}}
+                {{- end -}}
+
+                {{/* Append any sections not explicitly in chapterOrder (e.g., new sections) */}}
+                {{- range $groupedPages -}}
+                    {{- $sectionKey := .Key -}}
+                    {{- if not (index $processedKeys $sectionKey) -}} {{/* Check if not already processed  */}}
+                        {{- $orderedGroups = $orderedGroups | append . -}}
+                        {{- $processedKeys = merge $processedKeys (dict $sectionKey true) -}} {{/* Mark as processed  */}}
+                    {{- end -}}
+                {{- end -}}
+                
+                {{- range $orderedGroups -}}
+                {{- $sectionName := .Key -}}
+                {{- $sectionPages := .Pages -}}
+                
+                <section class="chapter-group">
+                    <h2>
+                        {{- if hasPrefix $sectionName "chapter" -}}
+                            {{- $chapterPage := site.GetPage "section" $sectionName -}}
+                            {{- if $chapterPage -}}
+                                📖 {{ $chapterPage.Title }}
+                            {{- else -}}
+                                📖 {{ $sectionName | title }}
+                            {{- end -}}
+                        {{- else if eq $sectionName "appendix" -}}
+                            📎 付録
+                        {{- else if eq $sectionName "" -}}
+                            📄 その他
+                        {{- else -}}
+                            📄 {{ $sectionName | title }}
+                        {{- end -}}
+                    </h2>
+                    
+                    {{- if $isExerciseTagTerm -}}
+                        <!-- exerciseタグのタームページの場合は1列表示 -->
+                        <div class="exercises-list">
+                            {{- range $sectionPages.ByWeight -}}
+                            <article class="exercise-item">
+                                <!-- Item Header (exercise-specific) -->
+                                <header class="item-header">
+                                    <div class="item-title-area">
+                                        <h3><a href="{{ .Permalink }}">{{ .Title }}</a></h3>
+                                        {{- if .Params.rdbms -}}
+                                        <div class="item-badges">
+                                            {{- range first 5 .Params.rdbms -}}
+                                                {{- $name := . | lower -}}
+                                                {{- $displayName := . -}}
+                                                {{- $class := printf "badge-%s" $name -}}
+
+                                                {{- if eq $name "std" }}{{ $displayName = "標準SQL" }}{{ end -}}
+                                                {{- if eq $name "postgres" }}{{ $displayName = "PostgreSQL" }}{{ end -}}
+                                                {{- if eq $name "db2" }}{{ $displayName = "IBM Db2" }}{{ end -}}
+                                                {{- if eq $name "access" }}{{ $displayName = "MS Access" }}{{ end -}}
+
+                                                <div class="badge small {{ $class }}">{{ $displayName }}</div>
+                                            {{- end -}}
+                                            {{- if gt (len .Params.rdbms) 5 -}}
+                                            <div class="badge small more">+{{ sub (len .Params.rdbms) 5 }}</div>
+                                            {{- end -}}
+                                        </div>
+                                        {{- end -}}
+                                    </div>
+
+                                    <!-- Item Meta (exercise-specific) -->
+                                    <div class="item-meta">
+                                        {{- if .Params.difficulty -}}
+                                        <span class="difficulty difficulty-{{ .Params.difficulty }}">
+                                            {{- if eq .Params.difficulty "beginner" -}}初級
+                                            {{- else if eq .Params.difficulty "intermediate" -}}中級
+                                            {{- else if eq .Params.difficulty "advanced" -}}上級
+                                            {{- else -}}{{ .Params.difficulty }}
+                                            {{- end -}}
+                                        </span>
+                                        {{- end -}}
+
+                                        {{- if .Params.exercise_count -}}
+                                        <span class="exercise-count">🧩 {{ .Params.exercise_count }}問</span>
+                                        {{- end -}}
+
+                                        {{- if .Params.estimated_time -}}
+                                        <span class="estimated-time">⏱️ 約{{ .Params.estimated_time }}分</span>
+                                        {{- end -}}
+
+                                        {{- if .Date -}}
+                                        <span class="date">📅 {{ .Date.Format "2006/01/02" }}</span>
+                                        {{- end -}}
+                                    </div>
+                                </header>
+
+                                <!-- Item Content (exercise-specific) -->
+                                <div class="item-content">
+                                    {{- if .Params.description -}}
+                                    <p class="item-description">{{ .Params.description }}</p>
+                                    {{- else if .Summary -}}
+                                    <p class="item-description">{{ .Summary }}</p>
+                                    {{- end -}}
+                                </div>
+
+                                <!-- Item Footer (exercise-specific) -->
+                                <footer class="item-footer">
+                                    <a href="{{ .Permalink }}" class="exercise-link-btn">
+                                        演習を始める
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                        </svg>
+                                    </a>
+                                </footer>
+                            </article>
+                            {{- end -}}
+                        </div>
+                    {{- else -}}
+                        <!-- 他のタグ（chapterなど）の場合は従来の2列表示 -->
+                        <div class="exercises-grid">
+                            {{- range $sectionPages.ByWeight -}}
+                                {{- partial "article-card.html" . -}}
+                            {{- end -}}
+                        </div>
+                    {{- end -}}
+                </section>
+                {{- end -}}
+            </div>
+        {{- else -}}
+            <!-- 通常のリストページ（セクションなど）の場合（フラットな2列表示） -->
+            <div class="pages-grid">
+                {{- range .Pages.ByWeight -}}
+                    {{- partial "article-card.html" . -}}
+                {{- end -}}
+            </div>
+        {{- end -}}
+    {{- else -}}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-icon">
+            {{- if $isExerciseTagTerm -}}🧩
+            {{- else if $isTaxonomyListOrTermPage -}}🏷️
+            {{- else -}}📚
+            {{- end -}}
+        </div>
+        <h3>
+            {{- if $isExerciseTagTerm -}}演習問題が見つかりません
+            {{- else if $isTaxonomyListOrTermPage -}}コンテンツが見つかりません
+            {{- else -}}コンテンツが見つかりません
+            {{- end -}}
+        </h3>
+        <p>
+            {{- if $isExerciseTagTerm -}}このタグに関連する演習問題はまだありません。
+            {{- else if $isTaxonomyListOrTermPage -}}このタグに関連するコンテンツはまだありません。
+            {{- else -}}このセクションにはまだコンテンツがありません。
+            {{- end -}}
+        </p>
+    </div>
+    {{- end -}}
+
+    <!-- Pagination -->
+    {{- template "_internal/pagination.html" . -}}
+</div>
+
+<style>
+/* Base List Page Styles */
+.list-page {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--neutral-200);
+}
+
+.page-description {
+    font-size: 1.1rem;
+    color: var(--neutral-600);
+    margin-top: 1rem;
+}
+
+/* Common grid for general list pages and non-exercise taxonomy pages */
+.pages-grid, .exercises-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Common card styles for general list pages and non-exercise taxonomy pages */
+.page-card { /* unified from page-card and exercise-card (for general list) */
+    background: white;
+    border: 1px solid var(--neutral-200);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    display: flex; /* For flex layout to push footer to bottom */
+    flex-direction: column;
+    justify-content: space-between; /* Pushes footer down */
+}
+
+.page-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: var(--primary-blue);
+}
+
+.card-header h2 {
+    margin-bottom: 0.5rem;
+}
+
+.card-header h2 a {
+    color: var(--neutral-800);
+    text-decoration: none;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.card-header h2 a:hover {
+    color: var(--primary-blue);
+}
+
+.card-badges, .item-badges { /* unified styles for badges */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.badge-std { background-color: #e0f2fe; color: #0284c7; } /* Sky Blue */
+.badge-postgres { background-color: #dbeafe; color: #2563eb; } /* Indigo */
+.badge-db2 { background-color: #eef2ff; color: #4338ca; } /* Violet */
+.badge-access { background-color: #fce7f3; color: #db2777; } /* Pink */
+.badge-mysql { background-color: #e0f7fa; color: #00838f; } /* Cyan */
+.badge-oracle { background-color: #ffe0b2; color: #ef6c00; } /* Orange */
+.badge-sqlite { background-color: #e3f2fd; color: #1976d2; } /* Blue */
+.badge-sqlserver { background-color: #ede7f6; color: #673ab7; } /* Deep Purple */
+.badge.small {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.6rem;
+}
+
+.badge.more {
+    background-color: var(--neutral-200);
+    color: var(--neutral-700);
+}
+
+.card-content {
+    flex-grow: 1; /* Allows content to grow and push footer down */
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.card-description {
+    color: var(--neutral-600);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.card-meta { /* unified from card-meta and item-meta for general list */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    font-size: 0.9rem;
+    margin-top: 1rem; /* Adjust if description is not always present */
+}
+
+.difficulty {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+.difficulty-beginner { 
+    background: #dcfce7; 
+    color: #16a34a; 
+}
+
+.difficulty-intermediate { 
+    background: #fef3c7; 
+    color: #d97706; 
+}
+
+.difficulty-advanced { 
+    background: #fecaca; 
+    color: #dc2626; 
+}
+
+.reading-time,
+.exercise-count,
+.estimated-time {
+    color: var(--accent-purple);
+    font-weight: 500;
+}
+
+.date {
+    color: var(--neutral-500);
+}
+
+.topics-list {
+    margin-top: 1.5rem;
+    background: var(--neutral-50);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.topics-list h4 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    color: var(--neutral-700);
+}
+
+.topics-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.topics-list li {
+    font-size: 0.9rem;
+    color: var(--neutral-600);
+    margin-bottom: 0.25rem;
+    line-height: 1.4;
+}
+
+.topics-list li:last-child {
+    margin-bottom: 0;
+}
+
+.card-footer { /* unified for read-more-btn */
+    display: flex;
+    justify-content: flex-end;
+    margin-top: auto; /* Push footer to bottom */
+}
+
+.read-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--primary-blue);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.read-more-btn:hover {
+    background: var(--accent-purple);
+    transform: translateX(2px);
+}
+
+.read-more-btn svg,
+.exercise-link-btn svg {
+    width: 1em;
+    height: 1em;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--neutral-600);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    margin-bottom: 1rem;
+    color: var(--neutral-800);
+}
+
+/* Taxonomy Page Specific Styles */
+/* Applies to .list-page.taxonomy-page */
+.taxonomy-stats {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    background: var(--neutral-100);
+    color: var(--neutral-700);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.chapter-group {
+    margin-bottom: 3rem;
+}
+
+.chapter-group h2 {
+    color: var(--primary-blue);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--neutral-200);
+}
+
+/* 1列表示用のスタイル (exercise-list specific) */
+.exercises-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.exercise-item {
+    background: white;
+    border: 1px solid var(--neutral-200);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.exercise-item:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: var(--primary-blue);
+}
+
+.item-header { /* exercise-item specific header layout */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.item-title-area h3 {
+    margin-bottom: 0.5rem;
+    color: var(--neutral-800);
+}
+
+.item-title-area h3 a {
+    color: var(--neutral-800);
+    text-decoration: none;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.item-title-area h3 a:hover {
+    color: var(--primary-blue);
+}
+
+/* .item-badges and .item-meta use common badge/meta styles from above */
+
+.item-content { /* exercise-item specific content, could be same as card-content but kept for clarity */
+    margin-bottom: 1.5rem;
+}
+
+.item-description { /* exercise-item specific description, could be same as card-description but kept for clarity */
+    color: var(--neutral-600);
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+
+.item-footer { /* exercise-item specific footer for its button */
+    display: flex;
+    justify-content: flex-end;
+}
+
+.exercise-link-btn { /* exercise-item specific button, has different background */
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--accent-purple); /* Different color for exercise button */
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    z-index: 10; /* Ensure button is clickable if anything overlaps */
+}
+
+.exercise-link-btn:hover {
+    background: var(--primary-blue);
+    transform: translateX(2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .item-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .item-meta {
+        justify-content: flex-start;
+    }
+    
+    .item-footer {
+        justify-content: center;
+    }
+    
+    .exercise-item {
+        padding: 1.5rem;
+    }
+
+    /* Adjust general card for smaller screens */
+    .page-card {
+        padding: 1rem;
+    }
+}
+</style>
+{{- end -}}

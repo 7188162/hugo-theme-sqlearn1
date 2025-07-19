@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="{{ site.Language.Lang | default "ja" }}">
+<head>
+    {{- partial "head.html" . -}}
+</head>
+<body>
+    {{- partial "header.html" . -}}
+    
+    {{- if .IsHome -}}
+        <!-- Hero Section for Home Page -->
+        <section class="hero">
+            <div class="hero-content fade-in">
+                <h1>{{ site.Title | default "実践的SQL学習サイト" }}</h1>
+                <p>{{ site.Params.description | default "基本構文から実用的テクニックまで、体系的にSQLをマスターしよう" }}</p>
+                {{- $chaptersSection := site.GetPage "section" "chapters" -}}
+                {{- if $chaptersSection -}}
+                <a href="{{ $chaptersSection.Permalink }}" class="cta-button">学習を始める</a>
+                {{- end -}}
+                
+                <!-- Progress Bar -->
+                {{- if site.Params.showProgress -}}
+                <div style="margin-top: 2rem;">
+                    <p style="opacity: 0.8; margin-bottom: 0.5rem;">学習進捗: {{ site.Params.progressText | default "第2章まで完了" }}</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ site.Params.progressPercent | default "35" }}%;"></div>
+                    </div>
+                </div>
+                {{- end -}}
+            </div>
+        </section>
+    {{- end -}}
+
+    <!-- Main Content -->
+    <div class="main-content{{ if .IsHome }} home-layout{{ end }}">
+        {{- if not .IsHome -}}
+        <!-- Sidebar -->
+        <aside class="sidebar fade-in">
+            {{- partial "sidebar.html" . -}}
+        </aside>
+        {{- end -}}
+
+        <!-- Content Area -->
+        <main class="content fade-in {{ if .IsHome }}home-content{{ end }}">
+            {{- block "main" . }}{{- end }}
+        </main>
+    </div>
+
+    {{- partial "footer.html" . -}}
+
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+    <!-- Mermaid.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#2563eb',
+                primaryTextColor: '#374151',
+                primaryBorderColor: '#e5e7eb',
+                lineColor: '#6b7280'
+            }
+        });
+    </script>
+
+    <!-- Custom JavaScript -->
+    <script src="{{ "js/main.js" | relURL }}"></script>
+</body>
+</html>

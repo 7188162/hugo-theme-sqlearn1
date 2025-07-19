@@ -1,0 +1,192 @@
+{{/*
+  円グラフによる学習進捗チャートを表示するショートコード
+  使い方: {{< progress-pie chapter="第2章" >}}
+*/}}
+
+{{- $chapter := .Get "chapter" | default "この章" -}}
+
+<div class="progress-pie-container" id="progress-pie-{{ .Ordinal }}">
+    <h3>📊 {{ $chapter }}の学習進捗</h3>
+    <p class="chart-description">学習項目の完了状況をわかりやすく表示します</p>
+    
+    <div class="pie-chart-wrapper">
+        <div class="chart-canvas">
+            <canvas id="progressPie-{{ .Ordinal }}" width="300" height="300"></canvas>
+        </div>
+        
+        <div class="progress-summary">
+            <div class="summary-item">
+                <div class="summary-number" id="completed-count-{{ .Ordinal }}">4</div>
+                <div class="summary-label">完了</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number" id="total-count-{{ .Ordinal }}">7</div>
+                <div class="summary-label">総項目</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-number" id="progress-percent-{{ .Ordinal }}">57%</div>
+                <div class="summary-label">進捗率</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('progressPie-{{ .Ordinal }}');
+    if (ctx) {
+        // サンプルデータ
+        const completedItems = 4;
+        const inProgressItems = 2;
+        const notStartedItems = 1;
+        const totalItems = completedItems + inProgressItems + notStartedItems;
+        
+        // 進捗率計算
+        const progressPercent = Math.round((completedItems / totalItems) * 100);
+        
+        // サマリー更新
+        document.getElementById('completed-count-{{ .Ordinal }}').textContent = completedItems;
+        document.getElementById('total-count-{{ .Ordinal }}').textContent = totalItems;
+        document.getElementById('progress-percent-{{ .Ordinal }}').textContent = progressPercent + '%';
+        
+        const pieData = {
+            labels: ['完了', '学習中', '未開始'],
+            datasets: [{
+                data: [completedItems, inProgressItems, notStartedItems],
+                backgroundColor: [
+                    '#10b981', // 完了（緑）
+                    '#f59e0b', // 学習中（黄）
+                    '#ef4444'  // 未開始（赤）
+                ],
+                borderColor: [
+                    '#059669',
+                    '#d97706',
+                    '#dc2626'
+                ],
+                borderWidth: 2,
+                hoverOffset: 4
+            }]
+        };
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: pieData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed;
+                                const percent = Math.round((value / totalItems) * 100);
+                                return label + ': ' + value + '項目 (' + percent + '%)';
+                            }
+                        }
+                    }
+                },
+                cutout: '60%',
+                elements: {
+                    arc: {
+                        borderRadius: 4
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+
+<style>
+.progress-pie-container {
+    background: white;
+    border: 1px solid var(--neutral-200);
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: var(--shadow-md);
+    text-align: center;
+}
+
+.progress-pie-container h3 {
+    color: var(--primary-blue);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.chart-description {
+    color: var(--neutral-600);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+}
+
+.pie-chart-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+}
+
+.chart-canvas {
+    position: relative;
+    width: 300px;
+    height: 300px;
+}
+
+.progress-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.summary-item {
+    text-align: center;
+}
+
+.summary-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.summary-label {
+    font-size: 0.9rem;
+    color: var(--neutral-600);
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .pie-chart-wrapper {
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    .chart-canvas {
+        width: 250px;
+        height: 250px;
+    }
+    
+    .progress-summary {
+        flex-direction: row;
+        justify-content: space-around;
+    }
+    
+    .summary-number {
+        font-size: 1.5rem;
+    }
+}
+</style>

@@ -1,0 +1,35 @@
+# サイドバーの設定データ
+
+# クイックリンク
+quicklinks:
+  - name: "SQLリファレンス"
+    url: "/appendix/a-5-quickreference/"
+    external: false
+  - name: "演習問題集"
+    url: "/tags/exercise/"
+    external: false
+  - name: "サンプルデータベース"
+    url: "/chapter0/#0-5-%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB%E3%83%87%E3%83%BC%E3%82%BF%E3%83%99%E3%83%BC%E3%82%B9%E3%81%AE%E7%B4%B9%E4%BB%8B%E3%81%A8%E3%82%BB%E3%83%83%E3%83%88%E3%82%A2%E3%83%83%E3%83%97"
+    external: false
+  - name: "SQLite公式ドキュメント"
+    url: "https://www.sqlite.org/index.html"
+    external: true
+  - name: "MySQL公式ドキュメント"
+    url: "https://dev.mysql.com/doc/"
+    external: true
+  - name: "PostgreSQL公式ドキュメント"
+    url: "https://www.postgresql.org/docs/"
+    external: true
+
+# 対応RDBMS（サイドバー表示用）
+supported_rdbms:
+  - name: "MySQL"
+    class: "mysql"
+  - name: "PostgreSQL"
+    class: "postgresql"
+  - name: "SQLite"
+    class: "sqlite"
+  - name: "MS Access"
+    class: "access"
+  - name: "IBM Db2"
+    class: "db2"

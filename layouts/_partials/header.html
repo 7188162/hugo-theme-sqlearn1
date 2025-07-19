@@ -1,0 +1,41 @@
+<!-- Header -->
+<header class="header">
+    <div class="nav-container">
+        {{- if site.Data.navigation.settings.show_logo -}}
+        <div class="logo">
+            <a href="{{ "/" | relURL }}">
+                {{ site.Data.navigation.settings.logo_text | default site.Params.logo | default "SQL Master Hub" }}
+            </a>
+        </div>
+        {{- end -}}
+        
+        <!-- Mobile menu button -->
+        {{- if site.Data.navigation.mobile.enabled -}}
+        <button class="mobile-menu-btn" aria-label="メニューを開く">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        {{- end -}}
+
+        <!-- Navigation -->
+        <nav class="nav-menu">
+            <ul class="nav-links">
+                {{- range sort site.Data.navigation.main ".weight" -}}
+                {{- $isActive := false -}}
+                {{- if eq .section "home" -}}
+                    {{- $isActive = $.IsHome -}}
+                {{- else if eq .section "chapters" -}}
+                    {{- $isActive = hasPrefix $.Section "chapter" -}}
+                {{- else if eq .section "exercises" -}}
+                    {{- $isActive = and (eq $.Kind "taxonomy") (eq $.Type "tags") (eq $.Title "exercise") -}}
+                {{- else -}}
+                    {{- $isActive = eq $.Section .section -}}
+                {{- end -}}
+                
+                <li><a href="{{ .url | relURL }}" {{ if $isActive }}class="active"{{ end }}>{{ .name }}</a></li>
+                {{- end -}}
+            </ul>
+        </nav>
+    </div>
+</header>

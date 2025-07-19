@@ -1,0 +1,341 @@
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-grid {{ if site.Data.footer.layout.show_dividers }}with-dividers{{ end }}">
+            <!-- Site Info -->
+            <div class="footer-section">
+                <h4>{{ site.Title }}</h4>
+                <p>{{ site.Data.footer.site_info.description | default site.Params.description | default "SQL学習サイト" }}</p>
+                
+                {{- if and site.Data.footer.social.enabled site.Data.footer.social.links -}}
+                <div class="social-links">
+                    <h5>{{ site.Data.footer.social.title | default "フォローする" }}</h5>
+                    <div class="social-icons">
+                        {{- range site.Data.footer.social.links -}}
+                        <a href="{{ .url }}" target="_blank" rel="noopener" aria-label="{{ .name }}" class="social-link">
+                            {{ .icon | safeHTML }}
+                        </a>
+                        {{- end -}}
+                    </div>
+                </div>
+                {{- end -}}
+            </div>
+
+            <!-- Navigation -->
+            <div class="footer-section">
+                <h4>{{ site.Data.footer.navigation.title | default "ナビゲーション" }}</h4>
+                <ul class="footer-links">
+                    {{- range site.Data.footer.navigation.links -}}
+                    <li><a href="{{ .url | relURL }}">{{ .name }}</a></li>
+                    {{- end -}}
+                </ul>
+            </div>
+
+            <!-- Recent Chapters -->
+            {{- if site.Data.footer.recent_chapters.enabled -}}
+            {{- $displayCount := site.Data.footer.recent_chapters.display_count | default 5 -}}
+            {{- $recentChapters := where site.RegularPages "Section" "chapters" | first $displayCount -}}
+            {{- if $recentChapters -}}
+            <div class="footer-section">
+                <h4>{{ site.Data.footer.recent_chapters.title | default "最近の章" }}</h4>
+                <ul class="footer-links">
+                    {{- range $recentChapters -}}
+                    <li><a href="{{ .Permalink }}">{{ .Title }}</a></li>
+                    {{- end -}}
+                </ul>
+            </div>
+            {{- end -}}
+            {{- end -}}
+
+            <!-- Quick Links (将来的な拡張) -->
+            {{- if site.Data.footer.quick_links.enabled -}}
+            <div class="footer-section">
+                <h4>{{ site.Data.footer.quick_links.title | default "クイックリンク" }}</h4>
+                <ul class="footer-links">
+                    {{- range site.Data.footer.quick_links.links -}}
+                    <li><a href="{{ .url | relURL }}">{{ .name }}</a></li>
+                    {{- end -}}
+                </ul>
+            </div>
+            {{- end -}}
+
+            <!-- Contact/License -->
+            <div class="footer-section">
+                <h4>{{ site.Data.footer.contact.title | default "ライセンス" }}</h4>
+                <p>{{ site.Data.footer.contact.license_text | default "このサイトのコンテンツは教育目的で提供されています。" }}</p>
+                
+                {{- if site.Data.footer.contact.contact_email -}}
+                <p class="contact-info">
+                    <strong>お問い合わせ:</strong><br>
+                    <a href="mailto:{{ site.Data.footer.contact.contact_email }}" class="contact-link">
+                        {{ site.Data.footer.contact.contact_email }}
+                    </a>
+                </p>
+                {{- end -}}
+            </div>
+
+            <!-- Newsletter (将来的な拡張) -->
+            {{- if site.Data.footer.newsletter.enabled -}}
+            <div class="footer-section">
+                <h4>{{ site.Data.footer.newsletter.title | default "ニュースレター" }}</h4>
+                <p>{{ site.Data.footer.newsletter.description }}</p>
+                <form class="newsletter-form" action="#" method="post">
+                    <div class="input-group">
+                        <input 
+                            type="email" 
+                            placeholder="{{ site.Data.footer.newsletter.placeholder | default "メールアドレスを入力" }}" 
+                            required 
+                            class="newsletter-input"
+                        >
+                        <button type="submit" class="newsletter-button">
+                            {{ site.Data.footer.newsletter.button_text | default "登録" }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {{- end -}}
+        </div>
+
+        <!-- Copyright -->
+        <div class="footer-bottom">
+            <div class="footer-bottom-content">
+                <p class="copyright">
+                    &copy; {{ now.Year }} {{ site.Title }}. 
+                    {{ site.Data.footer.copyright.text | default site.Params.copyright | default "All rights reserved." }}
+                </p>
+                
+                {{- if site.Data.footer.copyright.show_hugo_credit -}}
+                <p class="hugo-credit">
+                    Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
+                </p>
+                {{- end -}}
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+/* Footer Styles */
+.footer {
+    background: var(--neutral-800);
+    color: var(--neutral-200);
+    padding: 3rem 0 1rem;
+    margin-top: 4rem;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.footer-grid.with-dividers .footer-section:not(:last-child) {
+    border-right: 1px solid var(--neutral-700);
+    padding-right: 2rem;
+}
+
+.footer-section h4 {
+    color: white;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.footer-section h5 {
+    color: var(--neutral-300);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.5rem;
+}
+
+.footer-links a {
+    color: var(--neutral-300);
+    text-decoration: none;
+    transition: color 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.footer-links a:hover {
+    color: var(--primary-blue-light);
+}
+
+.social-links {
+    margin-top: 1.5rem;
+}
+
+.social-icons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--neutral-700);
+    border-radius: 50%;
+    color: var(--neutral-300);
+    transition: all 0.3s ease;
+}
+
+.social-link:hover {
+    background: var(--primary-blue);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.contact-info {
+    margin-top: 1rem;
+}
+
+.contact-link {
+    color: var(--primary-blue-light);
+    text-decoration: none;
+}
+
+.contact-link:hover {
+    text-decoration: underline;
+}
+
+.newsletter-form {
+    margin-top: 1rem;
+}
+
+.input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.newsletter-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid var(--neutral-600);
+    border-radius: 6px;
+    background: var(--neutral-700);
+    color: white;
+    font-size: 0.9rem;
+}
+
+.newsletter-input::placeholder {
+    color: var(--neutral-400);
+}
+
+.newsletter-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+}
+
+.newsletter-button {
+    padding: 0.75rem 1.5rem;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.newsletter-button:hover {
+    background: var(--primary-blue-light);
+}
+
+.footer-bottom {
+    border-top: 1px solid var(--neutral-700);
+    padding-top: 1.5rem;
+}
+
+.footer-bottom-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.copyright {
+    color: var(--neutral-400);
+    font-size: 0.9rem;
+}
+
+.hugo-credit {
+    color: var(--neutral-400);
+    font-size: 0.9rem;
+}
+
+.hugo-credit a {
+    color: var(--primary-blue-light);
+    text-decoration: none;
+}
+
+.hugo-credit a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .footer {
+        padding: 2rem 0 1rem;
+    }
+    
+    .footer-container {
+        padding: 0 1rem;
+    }
+    
+    .footer-grid {
+        grid-template-columns: repeat({{ site.Data.footer.layout.mobile_columns | default 1 }}, 1fr);
+        gap: 1.5rem;
+    }
+    
+    .footer-grid.with-dividers .footer-section {
+        border-right: none;
+        padding-right: 0;
+        border-bottom: 1px solid var(--neutral-700);
+        padding-bottom: 1.5rem;
+    }
+    
+    .footer-grid.with-dividers .footer-section:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .footer-bottom-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .input-group {
+        flex-direction: column;
+    }
+    
+    .social-icons {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>

@@ -1,0 +1,35 @@
+# ナビゲーションメニューの設定
+
+# メインナビゲーション
+main:
+  - name: "ホーム"
+    url: "/"
+    section: "home"
+    weight: 10
+  - name: "章一覧"
+    url: "/tags/chapter/"
+    # section: "chapters"
+    weight: 20
+  - name: "演習問題"
+    url: "/tags/exercise/"
+    section: "exercises"
+    weight: 30
+  - name: "リファレンス"
+    url: "/appendix/"
+    # section: "references"
+    weight: 40
+  - name: "このサイトについて"
+    url: "/about/"
+    # section: "about"
+    weight: 50
+
+# モバイルメニューの設定
+mobile:
+  enabled: true
+  breakpoint: 768  # px
+
+# ナビゲーションの表示制御
+settings:
+  show_logo: true
+  logo_text: "SQL Master Hub"
+  show_active_indicators: true

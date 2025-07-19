@@ -1,0 +1,607 @@
+{{- define "main" -}}
+<!-- Home Page Content -->
+<div class="home-sections">
+    <!-- Welcome Section -->
+    <section class="welcome-section">
+        <div class="welcome-content">
+            <h2>🎯 このサイトについて</h2>
+            <p>{{ site.Params.description | default "SQL初中級者を対象とした実践的な学習リソースです。基本的な構文から実用的なテクニックまで、体系的にSQLをマスターできます。" }}</p>
+            
+            <div class="features-grid">
+                {{- range site.Data.home.features -}}
+                <div class="feature-card">
+                    <div class="feature-icon">{{ .icon }}</div>
+                    <h3>{{ .title }}</h3>
+                    <p>{{ .description }}</p>
+                </div>
+                {{- end -}}
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapters Overview -->
+    {{- $allChapters := slice -}}
+    {{- range $section := site.Sections -}}
+        {{- if hasPrefix $section.Section "chapter" -}}
+            {{- $allChapters = $allChapters | append $section -}}
+        {{- end -}}
+    {{- end -}}
+    {{- $sortedChapters := sort $allChapters ".Params.weight" -}}
+    {{- if $sortedChapters -}}
+    <section class="chapters-overview">
+        <h2>📖 学習コンテンツ</h2>
+        <div class="chapters-grid">
+            {{- $chapterCount := site.Data.home.chapters.preview_count | default 6 -}}
+            {{- $topicCount := site.Data.home.topics.display_count | default 3 -}}
+            {{- range first $chapterCount $sortedChapters -}}
+            <div class="chapter-preview">
+                <div class="chapter-number">{{ .Params.display_number | default .Params.chapter | default "?" }}</div>
+                <div class="chapter-info">
+                    <h3><a href="{{ .Permalink }}">{{ .Title }}</a></h3>
+                    <p>{{ .Params.description | default .Summary }}</p>
+                    
+                    {{- if .Params.topics -}}
+                    <div class="chapter-topics">
+                        {{- range first $topicCount .Params.topics -}}
+                        <span class="topic-tag">{{ . }}</span>
+                        {{- end -}}
+                        {{- if gt (len .Params.topics) $topicCount -}}
+                        <span class="topic-more">+{{ sub (len .Params.topics) $topicCount }}</span>
+                        {{- end -}}
+                    </div>
+                    {{- end -}}
+                </div>
+                
+                {{- if .Params.difficulty -}}
+                <div class="chapter-difficulty difficulty-{{ .Params.difficulty }}">
+                    {{- if eq .Params.difficulty "beginner" -}}初級
+                    {{- else if eq .Params.difficulty "intermediate" -}}中級
+                    {{- else if eq .Params.difficulty "advanced" -}}上級
+                    {{- else -}}{{ .Params.difficulty }}
+                    {{- end -}}
+                </div>
+                {{- end -}}
+            </div>
+            {{- end -}}
+        </div>
+        
+        <div class="view-all-chapters">
+            <a href="/chapter0/" class="btn-secondary">すべての章を見る</a>
+        </div>
+    </section>
+    {{- end -}}
+
+    <!-- Quick Start Guide -->
+    <section class="quick-start">
+        <h2>🚀 学習の始め方</h2>
+        <div class="quick-start-steps">
+            {{- range site.Data.home.steps -}}
+            <div class="step">
+                <div class="step-number">{{ .number }}</div>
+                <div class="step-content">
+                    <h3>{{ .title }}</h3>
+                    <p>{{ .description }}</p>
+                </div>
+            </div>
+            {{- end -}}
+        </div>
+    </section>
+
+    <!-- RDBMS Support -->
+    <section class="rdbms-support-section">
+        <h2>💾 対応データベース</h2>
+        <p>このサイトでは以下のRDBMSに対応しています。各章で使用可能なデータベースをバッジで確認できます。</p>
+        
+        <div class="rdbms-cards">
+            {{- range site.Data.home.rdbms -}}
+            <div class="rdbms-card">
+                <div class="rdbms-icon {{ .icon_class }}"></div>
+                <h3>{{ .name }}</h3>
+                <p>{{ .description }}</p>
+            </div>
+            {{- end -}}
+        </div>
+    </section>
+
+    <!-- Recent Updates -->
+    {{- if site.Data.home.recent_updates.enabled -}}
+    {{- $recentCount := site.Data.home.recent_updates.display_count | default 3 -}}
+    {{- $summaryLength := site.Data.home.recent_updates.summary_length | default 100 -}}
+    {{- $badgeCount := site.Data.home.recent_updates.badge_count | default 3 -}}
+    {{- /* 全章セクションから最近の更新を取得 */ -}}
+    {{- $allChapters := slice -}}
+    {{- range $section := site.Sections -}}
+        {{- if hasPrefix $section.Section "chapter" -}}
+            {{- $allChapters = $allChapters | append $section -}}
+        {{- end -}}
+    {{- end -}}
+    {{- $recentPages := first $recentCount (sort $allChapters ".Date" "desc") -}}
+    {{- if $recentPages -}}
+    <section class="recent-updates">
+        <h2>📅 最近の更新</h2>
+        <div class="recent-list">
+            {{- range $recentPages -}}
+            <article class="recent-item">
+                <div class="recent-date">
+                    <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "1/2" }}</time>
+                </div>
+                <div class="recent-content">
+                    <h3><a href="{{ .Permalink }}">{{ .Title }}</a></h3>
+                    <p>{{ .Params.description | default .Summary | truncate $summaryLength }}</p>
+                    
+                    {{- if .Params.rdbms -}}
+                    <div class="recent-badges">
+                        {{- range first $badgeCount .Params.rdbms -}}
+                        {{- $name := . | lower -}}
+                        {{- $class := printf "badge-%s" $name -}}
+                        <span class="badge small {{ $class }}">{{ . }}</span>
+                        {{- end -}}
+                    </div>
+                    {{- end -}}
+                </div>
+            </article>
+            {{- end -}}
+        </div>
+    </section>
+    {{- end -}}
+    {{- end -}}
+
+    <!-- Call to Action -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>{{ site.Data.home.cta.title | default "SQLマスターへの道のりを始めよう！" }}</h2>
+            <p>{{ site.Data.home.cta.description | default "今すぐ学習を開始して、データベースのプロフェッショナルを目指しましょう。" }}</p>
+            <div class="cta-buttons">
+                <a href="/chapter0/" class="btn-primary">{{ site.Data.home.cta.primary_button | default "学習を始める" }}</a>
+                
+                {{- /* 第0章を取得（現在の構造に対応） */ -}}
+                {{- $firstChapter := "" -}}
+                {{- $method := site.Data.home.cta.first_chapter_method | default "weight" -}}
+                {{- $identifier := site.Data.home.cta.first_chapter_identifier | default "" -}}
+                
+                {{- /* 全章セクションを取得 */ -}}
+                {{- $allChapters := slice -}}
+                {{- range $section := site.Sections -}}
+                    {{- if hasPrefix $section.Section "chapter" -}}
+                        {{- $allChapters = $allChapters | append $section -}}
+                    {{- end -}}
+                {{- end -}}
+                {{- $sortedChapters := sort $allChapters ".Params.weight" -}}
+                
+                {{- if eq $method "weight" -}}
+                    {{- if $sortedChapters -}}
+                        {{- $firstChapter = first 1 $sortedChapters | index 0 -}}
+                    {{- end -}}
+                {{- else if eq $method "display_number" -}}
+                    {{- $filteredChapters := where $allChapters ".Params.display_number" "eq" $identifier -}}
+                    {{- if $filteredChapters -}}
+                        {{- $firstChapter = first 1 $filteredChapters | index 0 -}}
+                    {{- end -}}
+                {{- else if eq $method "section" -}}
+                    {{- $firstChapter = site.GetPage "section" $identifier -}}
+                {{- else -}}
+                    {{- if $sortedChapters -}}
+                        {{- $firstChapter = first 1 $sortedChapters | index 0 -}}
+                    {{- end -}}
+                {{- end -}}
+                
+                {{- if $firstChapter -}}
+                <a href="{{ $firstChapter.Permalink }}" class="btn-secondary">{{ site.Data.home.cta.secondary_button | default "はじめにを読む" }}</a>
+                {{- end -}}
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+/* Home Page Specific Styles */
+.home-sections {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.home-sections section {
+    margin-bottom: 4rem;
+    padding: 2rem 0;
+}
+
+.welcome-section {
+    text-align: center;
+    background: white;
+    padding: 4rem 3rem;  /* パディングを増加 */
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 4rem;
+    width: 100%;  /* 全幅を使用 */
+}
+
+.welcome-content {
+    max-width: 1000px;  /* 幅をさらに広げる */
+    margin: 0 auto;
+    width: 100%;
+}
+
+.welcome-content h2 {
+    margin-bottom: 2rem;
+    color: var(--neutral-800);
+    font-size: 2.25rem;  /* フォントサイズも大きく */
+}
+
+.welcome-content > p {
+    font-size: 1.2rem;  /* フォントサイズをさらに大きく */
+    line-height: 1.8;   /* 行間をさらに広く */
+    margin-bottom: 2.5rem;
+    color: var(--neutral-600);
+    max-width: 800px;   /* 文章の読みやすさのため最大幅を制限 */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.features-grid {
+    display: grid;
+    /* grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); */
+    grid-template-columns: repeat(2, 1fr); /* 常に2列表示 */
+    gap: 1.5rem;
+    margin-top: 3rem;
+    padding: 1rem;
+}
+
+@media (min-width: 768px) {
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .features-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.feature-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+}
+
+.chapters-overview {
+    text-align: center;
+}
+
+.chapters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.chapter-preview {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--neutral-200);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.chapter-preview:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.chapter-number {
+    position: absolute;
+    top: -10px;
+    left: 1.5rem;
+    background: var(--primary-blue);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.chapter-info h3 {
+    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.chapter-info h3 a {
+    color: var(--neutral-800);
+    text-decoration: none;
+}
+
+.chapter-info h3 a:hover {
+    color: var(--primary-blue);
+}
+
+.chapter-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.topic-tag {
+    background: var(--neutral-100);
+    color: var(--neutral-700);
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+}
+
+.topic-more {
+    background: var(--neutral-200);
+    color: var(--neutral-600);
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+}
+
+.chapter-difficulty {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.view-all-chapters {
+    margin-top: 2rem;
+}
+
+.btn-secondary {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.2);  /* 半透明の白背景 */
+    color: white;  /* 白文字 */
+    border: 2px solid rgba(255, 255, 255, 0.8);  /* 白いボーダー */
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;  /* フォントウェイトを太く */
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);  /* ぼかし効果 */
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+.quick-start-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.step-number {
+    background: var(--primary-blue);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.step-content h3 {
+    margin-bottom: 0.5rem;
+    color: var(--neutral-800);
+}
+
+.rdbms-support-section {
+    text-align: center;
+}
+
+.rdbms-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+    max-width: 900px;  /* 最大幅を制限して2-3列に */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (min-width: 768px) {
+    .rdbms-cards {
+        grid-template-columns: repeat(2, 1fr);  /* タブレット以上で2列 */
+    }
+}
+
+@media (min-width: 1024px) {
+    .rdbms-cards {
+        grid-template-columns: repeat(3, 1fr);  /* デスクトップで3列 */
+    }
+}
+
+.rdbms-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--neutral-200);
+    transition: all 0.3s ease;
+}
+
+.rdbms-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.rdbms-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+}
+
+.mysql-icon { background: linear-gradient(45deg, #4479a1, #00758f); }
+.postgresql-icon { background: linear-gradient(45deg, #336791, #4169e1); }
+.sqlite-icon { background: linear-gradient(45deg, #003b57, #0f4c75); }
+.access-icon { background: linear-gradient(45deg, #a4373a, #d63384); }
+.db2-icon { background: linear-gradient(45deg, #1f70c1, #0d47a1); }
+
+.rdbms-icon::before {
+    content: '🗄️';
+}
+
+.recent-updates {
+    background: var(--neutral-50);
+    padding: 2rem;
+    border-radius: 16px;
+}
+
+.recent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.recent-item {
+    display: flex;
+    gap: 1rem;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+}
+
+.recent-date {
+    background: var(--primary-blue);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 8px;
+    text-align: center;
+    min-width: 60px;
+    height: fit-content;
+}
+
+.recent-content h3 {
+    margin-bottom: 0.5rem;
+}
+
+.recent-content h3 a {
+    color: var(--neutral-800);
+    text-decoration: none;
+}
+
+.recent-content h3 a:hover {
+    color: var(--primary-blue);
+}
+
+.recent-badges {
+    display: flex;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+}
+
+.cta-section {
+    background: var(--gradient-primary);
+    color: white;
+    text-align: center;
+    padding: 4rem 2rem;
+    border-radius: 20px;
+    margin: 4rem 0;
+}
+
+.cta-content h2 {
+    color: white;
+    margin-bottom: 1rem;
+}
+
+.cta-content p {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-primary {
+    display: inline-block;
+    padding: 1rem 2rem;
+    background: white;
+    color: var(--primary-blue);
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+}
+
+@media (max-width: 768px) {
+    .step {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .recent-item {
+        flex-direction: column;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .chapters-grid,
+    .rdbms-cards {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{{- end -}}

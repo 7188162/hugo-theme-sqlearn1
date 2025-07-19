@@ -1,0 +1,193 @@
+{{/*
+  学習進捗チャートを表示するショートコード
+  使い方: {{< progress-chart >}}
+*/}}
+
+<div class="progress-chart-container" id="progress-chart-{{ .Ordinal }}">
+    <h3>📊 学習進捗チャート</h3>
+    <p class="chart-description">この章での学習項目と完了状況を可視化できます</p>
+    
+    <div class="chart-wrapper">
+        <canvas id="progressChart-{{ .Ordinal }}" width="400" height="200"></canvas>
+    </div>
+    
+    <div class="chart-legend">
+        <div class="legend-item">
+            <span class="legend-color completed"></span>
+            <span>完了</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color in-progress"></span>
+            <span>学習中</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color not-started"></span>
+            <span>未開始</span>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('progressChart-{{ .Ordinal }}');
+    if (ctx) {
+        // サンプルデータ（実際の実装では動的に生成）
+        const progressData = {
+            labels: [
+                'SELECT文の基本',
+                'WHERE句の使い方', 
+                'ORDER BY句',
+                'GROUP BY集計',
+                '結合（JOIN）',
+                '関数の活用',
+                '演習問題'
+            ],
+            datasets: [{
+                label: '進捗状況',
+                data: [100, 100, 80, 60, 40, 20, 0], // パーセンテージ
+                backgroundColor: [
+                    '#10b981', // 完了（緑）
+                    '#10b981', 
+                    '#f59e0b', // 学習中（黄）
+                    '#f59e0b',
+                    '#f59e0b',
+                    '#ef4444', // 未開始（赤）
+                    '#ef4444'
+                ],
+                borderColor: [
+                    '#059669',
+                    '#059669',
+                    '#d97706',
+                    '#d97706', 
+                    '#d97706',
+                    '#dc2626',
+                    '#dc2626'
+                ],
+                borderWidth: 2,
+                borderRadius: 4,
+                borderSkipped: false,
+            }]
+        };
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: progressData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y + '% 完了';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '完了率 (%)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                },
+                elements: {
+                    bar: {
+                        borderRadius: 4
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+
+<style>
+.progress-chart-container {
+    background: linear-gradient(135f, #f8fafc 0%, #e2e8f0 100%);
+    border: 1px solid var(--neutral-200);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    border-left: 4px solid var(--primary-blue);
+}
+
+.progress-chart-container h3 {
+    color: var(--primary-blue);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.chart-description {
+    color: var(--neutral-600);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 300px;
+    margin-bottom: 1rem;
+}
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.legend-color.completed {
+    background: #10b981;
+}
+
+.legend-color.in-progress {
+    background: #f59e0b;
+}
+
+.legend-color.not-started {
+    background: #ef4444;
+}
+
+@media (max-width: 768px) {
+    .chart-wrapper {
+        height: 250px;
+    }
+    
+    .chart-legend {
+        justify-content: center;
+        gap: 1rem;
+    }
+}
+</style>

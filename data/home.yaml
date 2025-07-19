@@ -1,0 +1,72 @@
+# ホームページの設定データ
+# このファイルでホームページの表示内容と数値を管理
+
+# 章プレビューセクション
+chapters:
+  preview_count: 6  # 表示する章数
+
+# 最近の更新セクション  
+recent_updates:
+  # enabled: true  # 表示の有無を制御
+  display_count: 3  # 表示する最近の更新数
+  summary_length: 100  # 概要文字数
+  badge_count: 3  # 表示するバッジ数
+
+# 学習トピック表示設定
+topics:
+  display_count: 3  # 章プレビューで表示するトピック数
+
+# 特徴カード設定
+features:
+  - icon: "📚"
+    title: "体系的な学習"
+    description: "基礎から応用まで段階的に学べる構成"
+  - icon: "💾"
+    title: "複数RDBMS対応"
+    description: "MySQL、PostgreSQL、SQLite、MS Access、IBM Db2に対応"
+  - icon: "💡"
+    title: "実践的な内容"
+    description: "実際の業務で使える実用的なテクニックを習得"
+  - icon: "🔧"
+    title: "豊富な演習"
+    description: "サンプルデータを使った実践的な演習問題"
+
+# 学習ステップ
+steps:
+  - number: 1
+    title: "環境を準備"
+    description: "お好みのRDBMSをインストールして、サンプルデータベースをセットアップしましょう。"
+  - number: 2
+    title: "基礎から学習"
+    description: "第0章から順番に進めて、SQLの基本概念をしっかりと理解しましょう。"
+  - number: 3
+    title: "実践で定着"
+    description: "各章の演習問題に取り組んで、学習した内容を実践で定着させましょう。"
+
+# 対応RDBMSカード
+rdbms:
+  - name: "MySQL"
+    icon_class: "mysql-icon"
+    description: "世界で最も人気のあるオープンソースデータベース"
+  - name: "PostgreSQL"
+    icon_class: "postgresql-icon"
+    description: "高機能で信頼性の高いオープンソースデータベース"
+  - name: "SQLite"
+    icon_class: "sqlite-icon"
+    description: "軽量でファイルベースの組み込みデータベース"
+  - name: "MS Access"
+    icon_class: "access-icon"
+    description: "Microsoft Officeに含まれるデスクトップデータベース"
+  - name: "IBM Db2"
+    icon_class: "db2-icon"
+    description: "企業向けの高性能リレーショナルデータベース"
+
+# CTAセクション
+cta:
+  title: "SQLマスターへの道のりを始めよう！"
+  description: "今すぐ学習を開始して、データベースのプロフェッショナルを目指しましょう。"
+  primary_button: "学習を始める"
+  secondary_button: "はじめにを読む"
+  # 第0章の特定方法を設定（method: weight, display_number, section）
+  first_chapter_method: "display_number"  # display_numberで指定"
+  first_chapter_identifier: "chapter0"  # chapter0セクションを取得

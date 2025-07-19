@@ -1,0 +1,74 @@
+<!-- Sidebar Navigation -->
+<h3>{{ site.Data.messages.chapters.title | default "📚 章一覧" }}</h3>
+
+{{- /* 全章セクションを取得してサイドバーに表示 */ -}}
+{{- $allChapters := slice -}}
+{{- range $section := site.Sections -}}
+    {{- if hasPrefix $section.Section "chapter" -}}
+        {{- $allChapters = $allChapters | append $section -}}
+    {{- end -}}
+{{- end -}}
+{{- $sortedChapters := sort $allChapters ".Params.weight" -}}
+
+<ul class="chapter-list">
+    {{- range $sortedChapters -}}
+    <li class="chapter-item">
+        <a href="{{ .Permalink }}" class="chapter-link {{ if eq $.Permalink .Permalink }}active{{ end }}">
+            {{- .Title -}}
+        </a>
+        
+        {{- if and (eq $.Permalink .Permalink) .TableOfContents -}}
+        <!-- Show TOC for current page -->
+        <div class="chapter-toc">
+            {{ .TableOfContents }}
+        </div>
+        {{- end -}}
+    </li>
+    {{- end -}}
+    
+    {{- /* 付録セクションも追加 */ -}}
+    {{- $appendixSection := site.GetPage "section" "appendix" -}}
+    {{- if $appendixSection -}}
+    <li class="chapter-item">
+        <a href="{{ $appendixSection.Permalink }}" class="chapter-link {{ if eq $.Section "appendix" }}active{{ end }}">
+            📎 {{ $appendixSection.Title | default "付録" }}
+        </a>
+    </li>
+    {{- end -}}
+</ul>
+
+<!-- Progress Section -->
+{{- if site.Params.showProgress -}}
+<div class="sidebar-section">
+    <h3>{{ site.Data.messages.progress.title | default "📈 学習進捗" }}</h3>
+    <div class="progress-info">
+        <p class="progress-text">{{ site.Params.progressText | default "第2章まで完了" }}</p>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ site.Params.progressPercent | default "35" }}%;"></div>
+        </div>
+        <p class="progress-percentage">{{ site.Params.progressPercent | default "35" }}% {{ site.Data.messages.progress.completed_suffix | default "完了" }}</p>
+    </div>
+</div>
+{{- end -}}
+
+<!-- Quick Links -->
+{{- if site.Data.sidebar.quicklinks -}}
+<div class="sidebar-section">
+    <h3>🔗 クイックリンク</h3>
+    <ul class="quick-links">
+        {{- range site.Data.sidebar.quicklinks -}}
+        <li><a href="{{ .url }}" {{ if .external }}target="_blank" rel="noopener"{{ end }}>{{ .name }}</a></li>
+        {{- end -}}
+    </ul>
+</div>
+{{- end -}}
+
+<!-- RDBMS Support Info -->
+<div class="sidebar-section">
+    <h3>💾 対応RDBMS</h3>
+    <div class="rdbms-support">
+        {{- range site.Data.sidebar.supported_rdbms -}}
+        <div class="badge {{ .class }}">{{ .name }}</div>
+        {{- end -}}
+    </div>
+</div>

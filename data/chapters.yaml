@@ -1,0 +1,21 @@
+# 章の表示順序設定
+order:
+  - "chapter0"
+  - "chapter1" 
+  - "chapter2"
+  - "chapter3"
+  - "chapter4"
+  - "chapter5"
+  - "chapter6"
+  - "appendix"
+
+# 章の表示名設定
+display_names:
+  chapter0: "第0章 はじめに"
+  chapter1: "第1章 基本操作"
+  chapter2: "第2章 CRUD操作"
+  chapter3: "第3章 集計と結合"
+  chapter4: "第4章 関数群"
+  chapter5: "第5章 中級テクニック"
+  chapter6: "第6章 データベース設計"
+  appendix: "付録"
